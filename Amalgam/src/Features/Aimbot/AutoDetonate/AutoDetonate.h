@@ -24,6 +24,7 @@ private:
 	bool LegitCheck(CTFPlayer* pLocal, CBaseEntity* pTarget) const;
 
 	std::optional<Vector> m_vRestore;
+	std::unordered_map<int, float> m_mLastSeen;
 public:
 	void Run(CTFPlayer* pLocal, CUserCmd* pCmd);
 };

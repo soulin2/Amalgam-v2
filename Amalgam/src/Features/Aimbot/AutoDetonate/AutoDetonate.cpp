@@ -257,7 +257,23 @@ bool CAutoDetonate::LegitCheck(CTFPlayer* pLocal, CBaseEntity* pTarget) const
 {
 	Vec3 vEye = pLocal->GetEyePosition();
 	Vec3 vTargetPos = pTarget->IsPlayer() ? pTarget->As<CTFPlayer>()->GetEyePosition() : pTarget->GetCenter();
-	return SDK::VisPos(pLocal, pTarget, vEye, vTargetPos);
+	if (SDK::VisPos(pLocal, pTarget, vEye, vTargetPos))
+		return true;
+
+	// HitChance (0=Off,1=25%,2=50%,3=75%,4=100%) controls how recently the enemy must
+	// have been seen: higher confidence = shorter time window = more conservative detonation.
+	const int iHitChance = Vars::Aimbot::Projectile::HitChance.Value;
+	if (!iHitChance)
+		return false;
+
+	const int iIndex = pTarget->entindex();
+	if (!m_mLastSeen.contains(iIndex))
+		return false;
+
+	// Time windows per HitChance level (seconds): Off, 25%, 50%, 75%, 100%
+	static const float flTimeWindows[] = { 0.f, 5.0f, 2.5f, 1.0f, 0.25f };
+	const float flTimeWindow = flTimeWindows[std::clamp(iHitChance, 0, static_cast<int>(std::size(flTimeWindows)) - 1)];
+	return (I::GlobalVars->curtime - m_mLastSeen.at(iIndex)) <= flTimeWindow;
 }
 
 bool CAutoDetonate::FlareCheck(CTFPlayer* pLocal)
@@ -562,6 +578,36 @@ void CAutoDetonate::Run(CTFPlayer* pLocal, CUserCmd* pCmd)
 {
 	if (!Vars::Aimbot::Projectile::AutoDetonate.Value)
 		return;
+
+	// Track last-seen times for enemies to support legit detonation on previously-spotted targets.
+	// Only run when legit mode + hit chance are enabled and relevant projectiles are deployed.
+	if (Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Legit
+		&& Vars::Aimbot::Projectile::HitChance.Value)
+	{
+		const bool bHasStickies = (Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Stickies)
+			&& !H::Entities.GetGroup(EntityEnum::LocalStickies).empty();
+		const bool bHasFlares = (Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Flares)
+			&& !H::Entities.GetGroup(EntityEnum::LocalFlares).empty();
+		if (bHasStickies || bHasFlares)
+		{
+			Vec3 vEye = pLocal->GetEyePosition();
+			for (auto pEntity : H::Entities.GetGroup(EntityEnum::PlayerEnemy))
+			{
+				auto pPlayer = pEntity->As<CTFPlayer>();
+				if (pPlayer->IsDormant() || !pPlayer->IsAlive() || pPlayer->IsAGhost())
+					continue;
+				if (SDK::VisPos(pLocal, pEntity, vEye, pPlayer->GetEyePosition()))
+					m_mLastSeen[pEntity->entindex()] = I::GlobalVars->curtime;
+			}
+			for (auto pEntity : H::Entities.GetGroup(EntityEnum::BuildingEnemy))
+			{
+				if (pEntity->IsDormant())
+					continue;
+				if (SDK::VisPos(pLocal, pEntity, vEye, pEntity->GetCenter()))
+					m_mLastSeen[pEntity->entindex()] = I::GlobalVars->curtime;
+			}
+		}
+	}
 
 	if ((Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Stickies && StickyCheck(pLocal, pCmd))
 		|| (Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Flares && FlareCheck(pLocal)))
