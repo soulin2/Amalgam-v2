@@ -900,7 +900,7 @@ void CVisuals::FOV(CTFPlayer* pLocal, CViewSetup* pView)
 	if (pLocal->IsAlive())
 	{
 		pLocal->m_iFOV() = pView->fov;
-		pLocal->m_iDefaultFOV() = std::max(flRegularOverride, flRegularFOV);
+		pLocal->m_iDefaultFOV() = bZoomed ? flRegularFOV : std::max(flRegularOverride, flRegularFOV);
 		default_fov->SetValue(pLocal->m_iDefaultFOV());
 	}
 }
