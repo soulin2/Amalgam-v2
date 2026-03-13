@@ -1671,16 +1671,9 @@ bool CAimbotProjectile::Aim(const Vec3& vCurAngle, const Vec3& vToAngle, Vec3& v
 	case Vars::Aimbot::General::AimTypeEnum::Assistive:
 		Vec3 vMouseDelta = G::CurrentUserCmd->viewangles.DeltaAngle(G::LastUserCmd->viewangles);
 		Vec3 vTargetDelta = vToAngle.DeltaAngle(G::LastUserCmd->viewangles);
-		float flMouseLen = vMouseDelta.Length2D();
-		float flTargetLen = vTargetDelta.Length2D();
-		float flStrength = F::Aimbot.GetSmoothStrength(vCurAngle, vToAngle);
-		float flDotApprox = (flMouseLen > 0.001f && flTargetLen > 0.001f)
-			? (vMouseDelta.x * vTargetDelta.x + vMouseDelta.y * vTargetDelta.y) / (flMouseLen * flTargetLen)
-			: 0.f;
-		float flAssistScale = std::clamp((flDotApprox + 1.f) * 0.5f, 0.f, 1.f);
-		Vec3 vAdjustedDelta = vTargetDelta.Normalized() * std::min(flMouseLen * (1.f + flAssistScale * 0.5f), flTargetLen);
-		vOut = vCurAngle - vMouseDelta + vMouseDelta.LerpAngle(vAdjustedDelta, flStrength);
-		Math::ClampAngles(vOut);
+		float flMouseDelta = vMouseDelta.Length2D(), flTargetDelta = vTargetDelta.Length2D();
+		vTargetDelta = vTargetDelta.Normalized() * std::min(flMouseDelta, flTargetDelta);
+		vOut = vCurAngle - vMouseDelta + vMouseDelta.LerpAngle(vTargetDelta, F::Aimbot.GetSmoothStrength(vCurAngle, vToAngle));
 		bReturn = true;
 		break;
 	}
