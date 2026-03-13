@@ -1966,21 +1966,20 @@ bool CAimbotProjectile::RunMain(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUser
 void CAimbotProjectile::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pCmd)
 {
 	m_iWeaponID = pWeapon->GetWeaponID();
-	int iOldAimType = Vars::Aimbot::General::AimType.Value;
-	bool bOldAutoShoot = Vars::Aimbot::General::AutoShoot.Value;
-	if (F::AutoHeal.m_iAutoSwitch != 0)
+	const bool bAutoSwitch = F::AutoHeal.m_iAutoSwitch != 0;
+	bool bOldAutoShoot = false;
+	if (bAutoSwitch)
 	{
-		Vars::Aimbot::General::AimType.Value = Vars::Aimbot::General::AimTypeEnum::Silent;
+		bOldAutoShoot = Vars::Aimbot::General::AutoShoot.Value;
 		Vars::Aimbot::General::AutoShoot.Value = true;
 	}
 	const bool bSuccess = RunMain(pLocal, pWeapon, pCmd);
-	if (F::AutoHeal.m_iAutoSwitch != 0)
+	if (bAutoSwitch)
 	{
 		// Force it to switch back if we cant shoot for too long
 		if (!bSuccess && F::AutoHeal.m_flAutoSwitchExpireTime < I::GlobalVars->curtime)
 			F::AutoHeal.m_iAutoSwitch = 2;
 
-		Vars::Aimbot::General::AimType.Value = iOldAimType;
 		Vars::Aimbot::General::AutoShoot.Value = bOldAutoShoot;
 	}
 #ifdef SPLASH_DEBUG5

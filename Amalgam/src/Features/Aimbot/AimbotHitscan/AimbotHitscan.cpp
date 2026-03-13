@@ -453,7 +453,10 @@ int CAimbotHitscan::CanHit(Target_t& tTarget, CTFPlayer* pLocal, CTFWeaponBase* 
 							goto nextTick; // if we can't hit our primary hitbox, don't bother
 					}
 
-					Vec3 vAngles; bool bChanged = Aim(G::CurrentUserCmd->viewangles, Math::CalcAngle(m_vEyePos, vOrigin), vAngles);
+					Vec3 vAngleTo = Math::CalcAngle(m_vEyePos, vOrigin);
+					Vec3 vAngles; bool bChanged = Aim(G::CurrentUserCmd->viewangles, vAngleTo, vAngles);
+					if (!bChanged && Math::CalcFov(G::CurrentUserCmd->viewangles, vAngleTo) > Vars::Aimbot::General::AimFOV.Value)
+						continue;
 					Vec3 vForward; Math::AngleVectors(vAngles, &vForward);
 					float flDist = m_vEyePos.DistTo(vOrigin);
 
