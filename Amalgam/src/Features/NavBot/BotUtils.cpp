@@ -411,22 +411,20 @@ void CBotUtils::SetSlot(CTFPlayer* pLocal, int iSlot)
 
 void CBotUtils::DoSlowAim(Vec3& vWishAngles, float flSpeed, Vec3 vPreviousAngles)
 {
-	// Yaw
-	if (vPreviousAngles.y != vWishAngles.y)
-	{
-		Vec3 vSlowDelta = vWishAngles - vPreviousAngles;
+	Vec3 vSlowDelta = vWishAngles - vPreviousAngles;
 
-		while (vSlowDelta.y > 180)
-			vSlowDelta.y -= 360;
-		while (vSlowDelta.y < -180)
-			vSlowDelta.y += 360;
+	// Normalize yaw delta to the shortest rotation path (pitch is bounded to
+	// [-89, 89] so its delta never needs wrap-around correction).
+	while (vSlowDelta.y > 180)
+		vSlowDelta.y -= 360;
+	while (vSlowDelta.y < -180)
+		vSlowDelta.y += 360;
 
-		vSlowDelta /= flSpeed;
-		vWishAngles = vPreviousAngles + vSlowDelta;
+	vSlowDelta /= flSpeed;
+	vWishAngles = vPreviousAngles + vSlowDelta;
 
-		// Clamp as we changed angles
-		Math::ClampAngles(vWishAngles);
-	}
+	// Clamp as we changed angles
+	Math::ClampAngles(vWishAngles);
 }
 
 void CBotUtils::LookAtPath(CUserCmd* pCmd, Vec2 vDest, Vec3 vLocalEyePos, bool bSilent)
@@ -481,6 +479,18 @@ void CBotUtils::LookLegit(CTFPlayer* pLocal, CUserCmd* pCmd, const Vec3& vDest, 
 			tState.m_vAnchor = vCurrent;
 		return;
 	}
+
+	// For non-silent calls (i.e. real-view aimbot legit mode) sync the
+	// DoSlowAim baseline to the actual engine view before computing the goal.
+	// Without this, m_vLastAngles can be stale from a previous frame where no
+	// target was visible and the player moved their mouse, which causes
+	// DoSlowAim to produce an intermediate angle that is far from the goal —
+	// the source of the sudden 180-degree flip.  The end-of-function
+	// m_vLastAngles = vWish assignment still runs, so the next frame's sync
+	// will start from the aimbot output (+ any mouse delta), keeping the
+	// smooth convergence towards the target correct each tick.
+	if (!bSilent)
+		m_vLastAngles = I::EngineClient->GetViewAngles();
 
 	Vec3 vEye = pLocal->GetEyePosition();
 	Vec3 vLook = vDest;
