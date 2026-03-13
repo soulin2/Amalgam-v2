@@ -208,7 +208,12 @@ void CEntities::Store()
 
 	m_bIsSpectated = false;
 	m_pLocal = pLocalEntity->As<CTFPlayer>();
-	m_pLocalWeapon = m_pLocal->m_hActiveWeapon()->As<CTFWeaponBase>();
+	m_pLocalWeapon = nullptr;
+	if (const auto hWeapon = m_pLocal->m_hActiveWeapon(); hWeapon.IsValid())
+	{
+		if (auto pWeapon = hWeapon.Get()->As<CTFWeaponBase>(); pWeapon && pWeapon->m_hOwnerEntity().Get() == m_pLocal)
+			m_pLocalWeapon = pWeapon;
+	}
 
 	int iLocalTeam = m_pLocal->m_iTeamNum();
 
