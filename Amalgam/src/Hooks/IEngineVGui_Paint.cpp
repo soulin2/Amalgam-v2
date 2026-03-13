@@ -15,6 +15,9 @@
 #include "../Features/NavBot/NavBotCore.h"
 #include "../Features/Aimbot/AutoHeal/AutoHeal.h"
 #include "../Features/Misc/AutoQueue/AutoQueue.h"
+#include "../Features/Visuals/Chams/Chams.h"
+#include "../Features/Visuals/Glow/Glow.h"
+#include "../Features/Visuals/Materials/Materials.h"
 
 MAKE_HOOK(IEngineVGui_Paint, U::Memory.GetVirtual(I::EngineVGui, 14), void,
 	void* rcx, int iMode)
@@ -25,6 +28,24 @@ MAKE_HOOK(IEngineVGui_Paint, U::Memory.GetVirtual(I::EngineVGui, 14), void,
 		return CALL_ORIGINAL(rcx, iMode);
 
 	F::AutoQueue.Run();
+
+#ifndef TEXTMODE
+	// Safety: if cheat rendering flags got stuck (e.g. due to an exception in DrawModel),
+	// reset them here before VGUI panels render to prevent a corrupted material override
+	// from affecting VGUI material rendering and causing an ACCESS VIOLATION.
+	if (F::Chams.m_bRendering || F::Glow.m_bRendering)
+	{
+		F::Chams.m_bRendering = false;
+		F::Glow.m_bRendering = false;
+		I::ModelRender->ForcedMaterialOverride(nullptr);
+		if (auto pRenderContext = I::MaterialSystem->GetRenderContext())
+		{
+			pRenderContext->SetStencilEnable(false);
+			pRenderContext->DepthRange(0.f, 1.f);
+			pRenderContext->CullMode(MATERIAL_CULLMODE_CCW);
+		}
+	}
+#endif
 
 	CALL_ORIGINAL(rcx, iMode);
 

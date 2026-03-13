@@ -178,6 +178,14 @@ void CMaterials::LoadMaterials()
 
 		StoreStruct(sName, sVMT);
 	}
+	// Acquire MaterialSystem lock before creating materials.
+	// This prevents a race condition where the render thread's CMaterial_Uncache hook
+	// reads m_mMatList while this initialization thread is writing to it.
+	// Note: StoreStruct() above only writes to m_mMaterials (not m_mMatList), so it
+	// does not need to be inside the lock. We take the lock here to avoid unnecessarily
+	// blocking the render thread during the earlier file I/O and struct-building steps.
+	auto tLock = I::MaterialSystem->Lock();
+
 	// create materials
 	for (auto& [_, tMaterial] : m_mMaterials)
 	{
@@ -196,6 +204,8 @@ void CMaterials::LoadMaterials()
 	S::InitializeStandardMaterials.Call<void>();
 	auto pMaterial = *reinterpret_cast<IMaterial**>(U::Memory.RelToAbs(S::Wireframe()));
 	pMaterial->SetMaterialVarFlag(MATERIAL_VAR_VERTEXALPHA, true);
+
+	I::MaterialSystem->Unlock(tLock);
 
 	static std::unordered_map<std::string, int> mSkyboxes = {};
 	static std::vector<const char*> vFaces = { "rt.vmt", "lf.vmt", "bk.vmt", "ft.vmt", "up.vmt", "dn.vmt" };
@@ -234,6 +244,8 @@ void CMaterials::UnloadMaterials()
 {
 	m_bLoaded = false;
 
+	auto tLock = I::MaterialSystem->Lock();
+
 	for (auto& [_, tMaterial] : m_mMaterials)
 		Remove(tMaterial.m_pMaterial);
 	m_mMaterials.clear();
@@ -241,6 +253,8 @@ void CMaterials::UnloadMaterials()
 
 	F::Glow.Unload();
 	F::CameraWindow.Unload();
+
+	I::MaterialSystem->Unlock(tLock);
 }
 
 void CMaterials::ReloadMaterials()
