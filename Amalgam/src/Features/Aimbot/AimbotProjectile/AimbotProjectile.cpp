@@ -1695,6 +1695,7 @@ void CAimbotProjectile::Aim(CUserCmd* pCmd, Vec3& vAngle)
 	case Vars::Aimbot::General::AimTypeEnum::Smooth:
 		case Vars::Aimbot::General::AimTypeEnum::SmoothVelocity:
 	case Vars::Aimbot::General::AimTypeEnum::Assistive:
+		SDK::FixMovement(pCmd, vAngle);
 		pCmd->viewangles = vAngle;
 		I::EngineClient->SetViewAngles(vAngle);
 		break;
