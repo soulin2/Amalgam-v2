@@ -363,8 +363,6 @@ NAMESPACE_BEGIN(Vars)
 			CVarEnum(HitChance, "Hit chance", 0, NONE, nullptr,
 				VA_LIST("Off", "25%", "50%", "75%", "100%"),
 				Off, Low, Medium, High, Max);
-			CVar(AutodetRadius, "Autodet radius", true);
-			CVar(SplashRadius, "Splash radius", true);
 			CVar(AutoRelease, "Auto release", 0.f, SLIDER_CLAMP | SLIDER_PRECISION, 0.f, 100.f, 5.f, "%g%%");
 			CVar(GrapplingHookAim, "Grappling hook aim", false);
 

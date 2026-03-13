@@ -390,15 +390,9 @@ void CMenu::MenuAimbot(int iTab)
 					FDropdown(Vars::Aimbot::Projectile::Hitboxes, FDropdownEnum::Left);
 					FDropdown(Vars::Aimbot::Projectile::Modifiers, FDropdownEnum::Right);
 					FSlider(Vars::Aimbot::Projectile::MaxSimulationTime, FSliderEnum::Left);
-					PushTransparent(!Vars::Aimbot::Projectile::StrafePrediction.Value);
-					{
-						FDropdown(Vars::Aimbot::Projectile::HitChance, FDropdownEnum::Right);
-					}
-					PopTransparent();
+					FDropdown(Vars::Aimbot::Projectile::HitChance, FDropdownEnum::Right);
 					FDropdown(Vars::Aimbot::Projectile::AutoDetonate, FDropdownEnum::Left);
 					FDropdown(Vars::Aimbot::Projectile::AutoAirblast, FDropdownEnum::Right);
-					FToggle(Vars::Aimbot::Projectile::AutodetRadius, FToggleEnum::Left);
-					FToggle(Vars::Aimbot::Projectile::SplashRadius, FToggleEnum::Right);
 					PushTransparent(!Vars::Aimbot::Projectile::AutoRelease.Value);
 					{
 						FSlider(Vars::Aimbot::Projectile::AutoRelease);
