@@ -253,6 +253,13 @@ bool CAutoDetonate::SkipTarget(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CBaseE
 	return true;
 }
 
+bool CAutoDetonate::LegitCheck(CTFPlayer* pLocal, CBaseEntity* pTarget) const
+{
+	Vec3 vEye = pLocal->GetEyePosition();
+	Vec3 vTargetPos = pTarget->IsPlayer() ? pTarget->As<CTFPlayer>()->GetEyePosition() : pTarget->GetCenter();
+	return SDK::VisPos(pLocal, pTarget, vEye, vTargetPos);
+}
+
 bool CAutoDetonate::FlareCheck(CTFPlayer* pLocal)
 {
 	auto& vProjectiles = H::Entities.GetGroup(EntityEnum::LocalFlares);
@@ -286,7 +293,14 @@ bool CAutoDetonate::FlareCheck(CTFPlayer* pLocal)
 			bool bCheckPredicted = !flLatency || CanSee(pEntity, pProjectile, vOrigin, flRadius);
 			RestorePlayer(pEntity);
 			if (bCheckPredicted && CanSee(pEntity, pProjectile, vOrigin, flRadius))
+			{
+				if (Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Legit)
+				{
+					if (!LegitCheck(pLocal, pEntity))
+						continue;
+				}
 				return true;
+			}
 		}
 	}
 	return false;
@@ -357,7 +371,14 @@ bool CAutoDetonate::StickyCheck(CTFPlayer* pLocal, CUserCmd* pCmd)
 				bool bCheckPred = !flLatency || CanSee(pEntity, pSticky, vPredictedStickyOrigins[pSticky->entindex()], vRadiuses[pSticky->entindex()]);
 				RestorePlayer(pEntity);
 				if (bCheckPred && CanSee(pEntity, pSticky, vPredictedStickyOrigins[pSticky->entindex()], vRadiuses[pSticky->entindex()]))
+				{
+					if (Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Legit)
+					{
+						if (!LegitCheck(pLocal, pEntity))
+							continue;
+					}
 					return true;
+				}
 			}
 		}
 	}
@@ -478,6 +499,11 @@ bool CAutoDetonate::StickyCheck(CTFPlayer* pLocal, CUserCmd* pCmd)
 
 			for (auto pVictim : vTrapVictims)
 			{
+				if (Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Legit)
+				{
+					if (!LegitCheck(pLocal, pVictim))
+						continue;
+				}
 				const auto iClassId = pVictim->GetClassID();
 				if (iClassId == ETFClassID::CEyeballBoss ||
 					iClassId == ETFClassID::CHeadlessHatman ||

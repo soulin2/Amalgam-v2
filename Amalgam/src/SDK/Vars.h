@@ -348,8 +348,8 @@ NAMESPACE_BEGIN(Vars)
 				VA_LIST("Off", "Include", "Prefer", "Only"),
 				Off, Include, Prefer, Only);
 			CVarEnum(AutoDetonate, "Auto detonate", 0b00, DROPDOWN_MULTI, "Off",
-				VA_LIST("Stickies", "Flares", "##Divider", "Damage priority", "Prevent self damage"),
-				Stickies = 1 << 0, Flares = 1 << 1, MaxDamage = 1 << 2, PreventSelfDamage = 1 << 3);
+				VA_LIST("Stickies", "Flares", "##Divider", "Damage priority", "Prevent self damage", "Legit"),
+				Stickies = 1 << 0, Flares = 1 << 1, MaxDamage = 1 << 2, PreventSelfDamage = 1 << 3, Legit = 1 << 4);
 			CVarEnum(AutoAirblast, "Auto airblast", 0b000, DROPDOWN_MULTI, "Off", // todo: implement advanced redirect!!
 				VA_LIST("Enabled", "##Divider", "Redirect", "Ignore FOV", "Smart airblast"),
 				Enabled = 1 << 0, Redirect = 1 << 1, IgnoreFOV = 1 << 2, Smart = 1 << 3);

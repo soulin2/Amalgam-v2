@@ -21,6 +21,7 @@ private:
 
 	bool FlareCheck(CTFPlayer* pLocal);
 	bool StickyCheck(CTFPlayer* pLocal, CUserCmd* pCmd);
+	bool LegitCheck(CTFPlayer* pLocal, CBaseEntity* pTarget) const;
 
 	std::optional<Vector> m_vRestore;
 public:
