@@ -111,15 +111,61 @@ void CAutoAirblast::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pCm
 		if (!ShouldTarget(pProjectile, pLocal))
 			continue;
 
-		if (Vars::Aimbot::Projectile::AutoAirblast.Value & Vars::Aimbot::Projectile::AutoAirblastEnum::Legit)
+		if (int nProjFilter = Vars::Aimbot::Projectile::AutoAirblastProjectiles.Value)
 		{
+			using namespace Vars::Aimbot::Projectile::AutoAirblastProjectilesEnum;
 			const auto classId = pProjectile->GetClassID();
-			if (classId != ETFClassID::CTFProjectile_Rocket &&
-				classId != ETFClassID::CTFBaseRocket &&
-				classId != ETFClassID::CTFFlameRocket &&
-				classId != ETFClassID::CTFProjectile_SentryRocket &&
-				classId != ETFClassID::CTFGrenadePipebombProjectile &&
-				classId != ETFClassID::CTFProjectile_EnergyBall)
+			bool bAllowed = false;
+
+			if ((nProjFilter & Rockets) && (classId == ETFClassID::CTFProjectile_Rocket || classId == ETFClassID::CTFBaseRocket || classId == ETFClassID::CTFFlameRocket))
+				bAllowed = true;
+			if ((nProjFilter & SentryRockets) && classId == ETFClassID::CTFProjectile_SentryRocket)
+				bAllowed = true;
+			if ((nProjFilter & Grenades) && classId == ETFClassID::CTFGrenadePipebombProjectile)
+				bAllowed = true;
+			if ((nProjFilter & EnergyBalls) && classId == ETFClassID::CTFProjectile_EnergyBall)
+				bAllowed = true;
+			if ((nProjFilter & Flares) && classId == ETFClassID::CTFProjectile_Flare)
+				bAllowed = true;
+			if ((nProjFilter & DragonsFury) && classId == ETFClassID::CTFProjectile_BallOfFire)
+				bAllowed = true;
+			if ((nProjFilter & Arrows) && (classId == ETFClassID::CTFProjectile_Arrow || classId == ETFClassID::CTFProjectile_HealingBolt))
+				bAllowed = true;
+			if ((nProjFilter & EnergyRings) && classId == ETFClassID::CTFProjectile_EnergyRing)
+				bAllowed = true;
+			if ((nProjFilter & MechanicalOrbs) && classId == ETFClassID::CTFProjectile_MechanicalArmOrb)
+				bAllowed = true;
+			if ((nProjFilter & SpellProjectiles) && (
+				classId == ETFClassID::CTFProjectile_SpellFireball ||
+				classId == ETFClassID::CTFProjectile_SpellLightningOrb ||
+				classId == ETFClassID::CTFProjectile_SpellKartOrb ||
+				classId == ETFClassID::CTFProjectile_SpellBats ||
+				classId == ETFClassID::CTFProjectile_SpellKartBats ||
+				classId == ETFClassID::CTFProjectile_SpellMeteorShower ||
+				classId == ETFClassID::CTFProjectile_SpellMirv ||
+				classId == ETFClassID::CTFProjectile_SpellPumpkin ||
+				classId == ETFClassID::CTFProjectile_SpellSpawnBoss ||
+				classId == ETFClassID::CTFProjectile_SpellSpawnHorde ||
+				classId == ETFClassID::CTFProjectile_SpellSpawnZombie ||
+				classId == ETFClassID::CTFProjectile_SpellTransposeTeleport))
+				bAllowed = true;
+			if ((nProjFilter & Throwables) && (
+				classId == ETFClassID::CTFProjectile_Throwable ||
+				classId == ETFClassID::CTFProjectile_ThrowableBreadMonster ||
+				classId == ETFClassID::CTFProjectile_ThrowableBrick ||
+				classId == ETFClassID::CTFProjectile_ThrowableRepel ||
+				classId == ETFClassID::CTFStunBall ||
+				classId == ETFClassID::CTFBall_Ornament))
+				bAllowed = true;
+			if ((nProjFilter & Jars) && (
+				classId == ETFClassID::CTFProjectile_Jar ||
+				classId == ETFClassID::CTFProjectile_JarMilk ||
+				classId == ETFClassID::CTFProjectile_JarGas))
+				bAllowed = true;
+			if ((nProjFilter & Cleavers) && classId == ETFClassID::CTFProjectile_Cleaver)
+				bAllowed = true;
+
+			if (!bAllowed)
 				continue;
 		}
 

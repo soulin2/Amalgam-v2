@@ -351,8 +351,11 @@ NAMESPACE_BEGIN(Vars)
 				VA_LIST("Stickies", "Flares", "##Divider", "Damage priority", "Prevent self damage", "Legit"),
 				Stickies = 1 << 0, Flares = 1 << 1, MaxDamage = 1 << 2, PreventSelfDamage = 1 << 3, Legit = 1 << 4);
 			CVarEnum(AutoAirblast, "Auto airblast", 0b000, DROPDOWN_MULTI, "Off", // todo: implement advanced redirect!!
-				VA_LIST("Enabled", "##Divider", "Redirect", "Ignore FOV", "Smart airblast", "##Divider", "Legit"),
-				Enabled = 1 << 0, Redirect = 1 << 1, IgnoreFOV = 1 << 2, Smart = 1 << 3, Legit = 1 << 4);
+				VA_LIST("Enabled", "##Divider", "Redirect", "Ignore FOV", "Smart airblast"),
+				Enabled = 1 << 0, Redirect = 1 << 1, IgnoreFOV = 1 << 2, Smart = 1 << 3);
+			CVarEnum(AutoAirblastProjectiles, "Airblast projectiles", 0, DROPDOWN_MULTI, "All projectiles",
+				VA_LIST("Rockets", "Sentry rockets", "Grenades", "##Divider", "Energy balls", "Flares", "Dragon's Fury", "Arrows", "Energy rings", "##Divider", "Mechanical orbs", "Spell projectiles", "Throwables", "Jars", "Cleavers"),
+				Rockets = 1 << 0, SentryRockets = 1 << 1, Grenades = 1 << 2, EnergyBalls = 1 << 3, Flares = 1 << 4, DragonsFury = 1 << 5, Arrows = 1 << 6, EnergyRings = 1 << 7, MechanicalOrbs = 1 << 8, SpellProjectiles = 1 << 9, Throwables = 1 << 10, Jars = 1 << 11, Cleavers = 1 << 12);
 			CVarEnum(Hitboxes, VA_LIST("Hitboxes", "Projectile hitboxes"), 0b001111, DROPDOWN_MULTI, nullptr,
 				VA_LIST("Auto", "##Divider", "Head", "Body", "Feet", "##Divider", "Bodyaim if lethal", "Prioritize feet"),
 				Auto = 1 << 0, Head = 1 << 1, Body = 1 << 2, Feet = 1 << 3, BodyaimIfLethal = 1 << 4, PrioritizeFeet = 1 << 5);
