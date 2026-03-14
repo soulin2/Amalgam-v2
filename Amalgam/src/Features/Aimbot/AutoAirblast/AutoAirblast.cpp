@@ -24,6 +24,7 @@ static inline bool IsLethalProjectile(CBaseEntity* pProjectile, CTFPlayer* pLoca
 		break;
 	case ETFClassID::CTFBaseRocket:
 	case ETFClassID::CTFFlameRocket:
+	case ETFClassID::CTFProjectile_EnergyBall:
 		flDamage = pWeapon ? pWeapon->GetDamage() : 90.f;
 		break;
 	case ETFClassID::CTFProjectile_SentryRocket:
@@ -117,7 +118,8 @@ void CAutoAirblast::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pCm
 				classId != ETFClassID::CTFBaseRocket &&
 				classId != ETFClassID::CTFFlameRocket &&
 				classId != ETFClassID::CTFProjectile_SentryRocket &&
-				classId != ETFClassID::CTFGrenadePipebombProjectile)
+				classId != ETFClassID::CTFGrenadePipebombProjectile &&
+				classId != ETFClassID::CTFProjectile_EnergyBall)
 				continue;
 		}
 
@@ -143,8 +145,18 @@ void CAutoAirblast::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pCm
 				bShouldBlast = true;
 				if (!F::AimbotProjectile.AutoAirblast(pLocal, pWeapon, pCmd, pProjectile))
 				{
-					SDK::FixMovement(pCmd, vAngle);
-					pCmd->viewangles = vAngle;
+					auto [pProjWeapon, pShooter] = F::ProjSim.GetEntities(pProjectile);
+					if (pShooter && pShooter->IsAlive())
+					{
+						Vec3 vShooterAngle = Math::CalcAngle(vEyePos, pShooter->GetShootPos());
+						SDK::FixMovement(pCmd, vShooterAngle);
+						pCmd->viewangles = vShooterAngle;
+					}
+					else
+					{
+						SDK::FixMovement(pCmd, vAngle);
+						pCmd->viewangles = vAngle;
+					}
 					G::PSilentAngles = true;
 				}
 			}
