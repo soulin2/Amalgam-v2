@@ -192,17 +192,32 @@ void CAutoAirblast::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pCm
 				if (!F::AimbotProjectile.AutoAirblast(pLocal, pWeapon, pCmd, pProjectile))
 				{
 					auto [pProjWeapon, pShooter] = F::ProjSim.GetEntities(pProjectile);
+					Vec3 vFallbackAngle = vAngle;
 					if (pShooter && pShooter->IsAlive())
 					{
-						Vec3 vShooterAngle = Math::CalcAngle(vEyePos, pShooter->GetShootPos());
-						SDK::FixMovement(pCmd, vShooterAngle);
-						pCmd->viewangles = vShooterAngle;
+						const Vec3 vShooterPos = pShooter->GetShootPos();
+						CTraceFilterWorldAndPropsOnly filter = {};
+						CGameTrace trace = {};
+						// Trace from eye toward shooter to detect walls
+						SDK::Trace(vEyePos, vShooterPos, MASK_SOLID, &filter, &trace);
+						if (trace.fraction >= 0.999f)
+						{
+							// Clear line of sight - aim directly at shooter
+							vFallbackAngle = Math::CalcAngle(vEyePos, vShooterPos);
+						}
+						else
+						{
+							// Shooter is behind a wall - trace downward from the
+							// obstruction point to find the ground for splash damage
+							const Vec3 vWallHit = trace.endpos;
+							CGameTrace groundTrace = {};
+							SDK::Trace(vWallHit, vWallHit - Vec3(0.f, 0.f, 256.f), MASK_SOLID, &filter, &groundTrace);
+							const Vec3 vGroundPoint = groundTrace.fraction < 1.f ? groundTrace.endpos : vWallHit;
+							vFallbackAngle = Math::CalcAngle(vEyePos, vGroundPoint);
+						}
 					}
-					else
-					{
-						SDK::FixMovement(pCmd, vAngle);
-						pCmd->viewangles = vAngle;
-					}
+					SDK::FixMovement(pCmd, vFallbackAngle);
+					pCmd->viewangles = vFallbackAngle;
 					G::PSilentAngles = true;
 				}
 			}
