@@ -192,17 +192,17 @@ void CAutoAirblast::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pCm
 				if (!F::AimbotProjectile.AutoAirblast(pLocal, pWeapon, pCmd, pProjectile))
 				{
 					auto [pProjWeapon, pShooter] = F::ProjSim.GetEntities(pProjectile);
-					Vec3 vFallbackAngle = vAngle;
 					if (pShooter && pShooter->IsAlive())
 					{
-						const Vec3 vShooterCenter = pShooter->GetCenter();
-						if (SDK::VisPosWorld(pLocal, pShooter, vEyePos, vShooterCenter))
-							vFallbackAngle = Math::CalcAngle(vEyePos, vShooterCenter);
-						else
-							vFallbackAngle = Math::CalcAngle(vEyePos, pShooter->GetAbsOrigin());
+						Vec3 vShooterAngle = Math::CalcAngle(vEyePos, pShooter->GetShootPos());
+						SDK::FixMovement(pCmd, vShooterAngle);
+						pCmd->viewangles = vShooterAngle;
 					}
-					SDK::FixMovement(pCmd, vFallbackAngle);
-					pCmd->viewangles = vFallbackAngle;
+					else
+					{
+						SDK::FixMovement(pCmd, vAngle);
+						pCmd->viewangles = vAngle;
+					}
 					G::PSilentAngles = true;
 				}
 			}
