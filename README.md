@@ -8,29 +8,29 @@
 Read about the original Amalgam documentation and features [here](https://github.com/rei-2/Amalgam/wiki).  
 Note: This repository is based on **TheGameEnhancer2004's fork** of Amalgam and includes additional changes and improvements.
 
+**Thanks @mlemlody for the crashfix.**
   
 ## Changes I've Made
 
-### Features
-- Added **Smart Airblast**.
-- Added **Sniper Triggerbot Detection** to CheaterDetection.
-
-### Improvements
+- Added **Smart Airblast**. (Sometimes works EXPERIMENTAL) automatically airblasts incoming critical projectiles.
+- Added **Sniper Triggerbot Detection** to Cheater Detection. Detects players who instantly headshot enemies peeking while scoped. headshot timing.
+- Added **Legit Mode** Auto-Detonate. Automatically detonates explosives when enemies are in direct line-of-sight.
+- Added **Select Projectiles Auto-Airblast**.
 - Improved **Auto-switch Crossbow logic** to avoid interrupting Uber.
-- Improved **Aimbot Accuracy** (doubletap sorting and projectile drag NaN handling).
 - Optimized **SmoothVelocity** to prevent FPS drops.
-
-### Fixes
-- Fixed **Medic auto-arrow not aiming with SmoothVelocity aim type**.
-- Fixed **Auto-arrow aimtype override and silent aimbot FOV bypass**.
-- Fixed **Projectile aimbot calculation errors**.
-- Fixed **Engineer melee tracking building center with SmoothVelocity**.
-- Fixed **ACCESS VIOLATION crashes**.
+- Improved **Auto-Airblast Redirect**.
+- Improved **Auto Detonate**.
+- Fixed **Medic Auto-arrow shoots like silent aimbot and FOV bypass**.
 - Fixed **Lag-compensation abuse false positives**.
+
+
 
 ### Changes
 - Changed default value of **Auto Abandon if no navmesh** to `false`.
 
+
+
 ### Cleanup
 - Cleaned up **README**.
+
 </div>
