@@ -195,30 +195,11 @@ void CAutoAirblast::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pCm
 					Vec3 vFallbackAngle = vAngle;
 					if (pShooter && pShooter->IsAlive())
 					{
-						CTraceFilterWorldAndPropsOnly filter = {};
-						CGameTrace trace = {};
-						// Check LOS to shooter's body center for a direct hit
 						const Vec3 vShooterCenter = pShooter->GetCenter();
-						SDK::Trace(vEyePos, vShooterCenter, MASK_SOLID, &filter, &trace);
-						if (trace.fraction >= 0.999f)
-						{
-							// Clear line of sight - aim at shooter's body center for a direct hit
+						if (SDK::VisPosWorld(pLocal, pShooter, vEyePos, vShooterCenter))
 							vFallbackAngle = Math::CalcAngle(vEyePos, vShooterCenter);
-						}
 						else
-						{
-							// Shooter is behind cover - find nearest damageable point:
-							// trace from eye to shooter's feet, find the wall surface,
-							// then trace down to find the ground at the wall base
-							const Vec3 vShooterFeet = pShooter->GetAbsOrigin();
-							CGameTrace feetTrace = {};
-							SDK::Trace(vEyePos, vShooterFeet, MASK_SOLID, &filter, &feetTrace);
-							const Vec3 vWallHit = feetTrace.endpos;
-							CGameTrace groundTrace = {};
-							SDK::Trace(vWallHit, vWallHit - Vec3(0.f, 0.f, 256.f), MASK_SOLID, &filter, &groundTrace);
-							const Vec3 vGroundPoint = groundTrace.fraction < 1.f ? groundTrace.endpos : vWallHit;
-							vFallbackAngle = Math::CalcAngle(vEyePos, vGroundPoint);
-						}
+							vFallbackAngle = Math::CalcAngle(vEyePos, pShooter->GetAbsOrigin());
 					}
 					SDK::FixMovement(pCmd, vFallbackAngle);
 					pCmd->viewangles = vFallbackAngle;
