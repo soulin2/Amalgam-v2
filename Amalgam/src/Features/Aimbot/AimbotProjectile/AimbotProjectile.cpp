@@ -92,8 +92,28 @@ static inline std::vector<Target_t> GetTargets(CTFPlayer* pLocal, CTFWeaponBase*
 				continue;
 
 			bool bTeam = pEntity->m_iTeamNum() == pLocal->m_iTeamNum();
-			if (bTeam && (pEntity->As<CBaseObject>()->m_iHealth() >= pEntity->As<CBaseObject>()->m_iMaxHealth() || pEntity->As<CBaseObject>()->m_bBuilding()))
-				continue;
+			if (bTeam)
+			{
+				if (pEntity->As<CBaseObject>()->m_bBuilding())
+					continue;
+
+				// Check per-building-type AutoRepair flag
+				bool bShouldRepair = false;
+				switch (pEntity->GetClassID())
+				{
+				case ETFClassID::CObjectSentrygun:
+					bShouldRepair = Vars::Aimbot::AutoEngie::AutoRepair.Value & Vars::Aimbot::AutoEngie::AutoRepairEnum::Sentry;
+					break;
+				case ETFClassID::CObjectDispenser:
+					bShouldRepair = Vars::Aimbot::AutoEngie::AutoRepair.Value & Vars::Aimbot::AutoEngie::AutoRepairEnum::Dispenser;
+					break;
+				case ETFClassID::CObjectTeleporter:
+					bShouldRepair = Vars::Aimbot::AutoEngie::AutoRepair.Value & Vars::Aimbot::AutoEngie::AutoRepairEnum::Teleporter;
+					break;
+				}
+				if (!bShouldRepair || pEntity->As<CBaseObject>()->m_iHealth() >= pEntity->As<CBaseObject>()->m_iMaxHealth())
+					continue;
+			}
 
 			Vec3 vPos = pEntity->GetCenter();
 			Vec3 vAngleTo = Math::CalcAngle(vLocalPos, vPos);
@@ -108,10 +128,11 @@ static inline std::vector<Target_t> GetTargets(CTFPlayer* pLocal, CTFWeaponBase*
 				switch (Vars::Aimbot::Healing::HealPriority.Value)
 				{
 				case Vars::Aimbot::Healing::HealPriorityEnum::PrioritizeFriends:
-					if (iOwner == I::EngineClient->GetLocalPlayer() || H::Entities.IsFriend(iOwner) || H::Entities.InParty(iOwner))
-						iPriority = std::numeric_limits<int>::max();
+					iPriority = ((iOwner == I::EngineClient->GetLocalPlayer() || H::Entities.IsFriend(iOwner) || H::Entities.InParty(iOwner))
+						? std::numeric_limits<int>::max() : 1);
 					break;
 				case Vars::Aimbot::Healing::HealPriorityEnum::PrioritizeTeam:
+				default: // Always prioritize friendly buildings above enemy ones for auto-repair
 					iPriority = std::numeric_limits<int>::max();
 				}
 			}
@@ -414,7 +435,7 @@ std::unordered_map<int, Vec3> CAimbotProjectile::GetDirectPoints()
 			else
 				mPoints[iPriority] = Vec3(0, 0, vMaxs.z - Vars::Aimbot::Projectile::VerticalShift.Value);
 			break;
-		case BOUNDS_BODY: mPoints[iPriority] = Vec3(0, 0, (vMaxs.z - vMins.z) / 2); break;
+		case BOUNDS_BODY: mPoints[iPriority] = Vec3(0, 0, (vMaxs.z + vMins.z) / 2); break;
 		case BOUNDS_FEET: mPoints[iPriority] = Vec3(0, 0, vMins.z + Vars::Aimbot::Projectile::VerticalShift.Value); break;
 		}
 	}
