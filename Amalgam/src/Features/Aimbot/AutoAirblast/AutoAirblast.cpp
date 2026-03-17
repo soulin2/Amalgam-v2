@@ -195,15 +195,15 @@ void CAutoAirblast::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pCm
 					Vec3 vFallbackAngle = vAngle;
 					if (pShooter && pShooter->IsAlive())
 					{
-						const Vec3 vShooterPos = pShooter->GetShootPos();
+						const Vec3 vShooterFeet = pShooter->GetAbsOrigin();
 						CTraceFilterWorldAndPropsOnly filter = {};
 						CGameTrace trace = {};
-						// Trace from eye toward shooter to detect walls
-						SDK::Trace(vEyePos, vShooterPos, MASK_SOLID, &filter, &trace);
+						// Trace from eye toward shooter's feet to detect walls
+						SDK::Trace(vEyePos, vShooterFeet, MASK_SOLID, &filter, &trace);
 						if (trace.fraction >= 0.999f)
 						{
-							// Clear line of sight - aim directly at shooter
-							vFallbackAngle = Math::CalcAngle(vEyePos, vShooterPos);
+							// Clear line of sight - aim at shooter's feet for splash damage
+							vFallbackAngle = Math::CalcAngle(vEyePos, vShooterFeet);
 						}
 						else
 						{
