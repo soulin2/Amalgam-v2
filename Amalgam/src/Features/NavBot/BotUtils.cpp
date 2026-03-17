@@ -20,21 +20,6 @@ static bool SmoothAimHasPriority()
 	return G::AimbotSteering;
 }
 
-static bool CanPrioritizeMeleeAsBest(CTFPlayer* pLocal)
-{
-	if (!pLocal)
-		return false;
-
-	if (pLocal->m_iClass() == TF_CLASS_ENGINEER)
-		return true;
-
-	// Demoknight: demoman without sticky launcher
-	if (pLocal->m_iClass() == TF_CLASS_DEMOMAN && G::SavedWepIds[SLOT_SECONDARY] != TF_WEAPON_PIPEBOMBLAUNCHER)
-		return true;
-
-	return false;
-}
-
 static int GetRangedFallbackSlot(CTFPlayer* pLocal)
 {
 	auto HasWeapon = [&](int iSlot)
@@ -395,7 +380,7 @@ void CBotUtils::UpdateBestSlot(CTFPlayer* pLocal)
 		break;
 	}
 
-	if (m_iBestSlot == SLOT_MELEE && !CanPrioritizeMeleeAsBest(pLocal))
+	if (m_iBestSlot == SLOT_MELEE && !pLocal->GetWeaponFromSlot(SLOT_MELEE))
 		m_iBestSlot = GetRangedFallbackSlot(pLocal);
 }
 

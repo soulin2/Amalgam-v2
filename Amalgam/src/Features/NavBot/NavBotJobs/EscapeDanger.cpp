@@ -357,39 +357,107 @@ bool CNavBotDanger::EscapeProjectiles(CTFPlayer* pLocal)
 
 bool CNavBotDanger::EscapeSpawn(CTFPlayer* pLocal)
 {
-	// Cancel if we're not in spawn and this is running
-	if (!(F::NavEngine.GetLocalNavArea()->m_iTFAttributeFlags & (TF_NAV_SPAWN_ROOM_RED | TF_NAV_SPAWN_ROOM_BLUE)))
+	static CNavArea* pSpawnTargetArea = nullptr;
+	constexpr uint32_t nSpawnRoomFlags = TF_NAV_SPAWN_ROOM_RED | TF_NAV_SPAWN_ROOM_BLUE;
+
+	auto pLocalArea = F::NavEngine.GetLocalNavArea();
+	if (!pLocalArea)
+		return false;
+
+	if (!(pLocalArea->m_iTFAttributeFlags & nSpawnRoomFlags))
 	{
+		pSpawnTargetArea = nullptr;
 		if (F::NavEngine.m_eCurrentPriority == PriorityListEnum::EscapeSpawn)
 			F::NavEngine.CancelPath();
 		return false;
 	}
 
-	// Don't try too often
 	static Timer tSpawnEscapeCooldown{};
-	bool bActive = F::NavEngine.m_eCurrentPriority == PriorityListEnum::EscapeSpawn;
-	if (bActive || !tSpawnEscapeCooldown.Run(2.f))
+	const bool bActive = F::NavEngine.m_eCurrentPriority == PriorityListEnum::EscapeSpawn;
+	if (bActive && pSpawnTargetArea && F::NavEngine.IsPathing())
+		return true;
+
+	auto TryExitArea = [&](CNavArea* pArea) -> bool
+		{
+			if (!pArea || !F::NavEngine.GetNavMap()->IsAreaValid(pArea))
+				return false;
+
+			Vector vTarget = pArea->m_vCenter;
+			if (F::NavEngine.GetNavMap()->HasDirectConnection(pLocalArea, pArea))
+			{
+				const bool bIsOneWay = F::NavEngine.GetNavMap()->IsOneWay(pLocalArea, pArea);
+				auto tPoints = F::NavEngine.GetNavMap()->DeterminePoints(pLocalArea, pArea, bIsOneWay);
+				auto tDropdown = F::NavEngine.GetNavMap()->HandleDropdown(tPoints.m_vCenter, tPoints.m_vNext, bIsOneWay);
+				vTarget = tDropdown.m_vAdjustedPos;
+				if (vTarget.IsZero())
+					vTarget = tPoints.m_vNext;
+			}
+
+			if (F::NavEngine.NavTo(vTarget, PriorityListEnum::EscapeSpawn))
+			{
+				pSpawnTargetArea = pArea;
+				return true;
+			}
+			return false;
+		};
+
+	if (bActive && pSpawnTargetArea && !(pSpawnTargetArea->m_iTFAttributeFlags & nSpawnRoomFlags) && TryExitArea(pSpawnTargetArea))
+		return true;
+
+	if (!tSpawnEscapeCooldown.Run(bActive ? 0.35f : 0.9f))
 		return bActive;
 
 	const auto vLocalOrigin = pLocal->GetAbsOrigin();
-	float flBestDist = FLT_MAX;	CNavArea* pClosest = nullptr;
+	std::vector<std::pair<CNavArea*, float>> vCandidates;
 
-	// Try to find a closest exit
+	auto AddCandidate = [&](CNavArea* pArea, float flScore) -> void
+		{
+			if (!pArea || (pArea->m_iTFAttributeFlags & nSpawnRoomFlags))
+				return;
+
+			if (std::find_if(vCandidates.begin(), vCandidates.end(), [&](const auto& tEntry) { return tEntry.first == pArea; }) != vCandidates.end())
+				return;
+
+			vCandidates.emplace_back(pArea, flScore);
+		};
+
+	for (const auto& tConnection : pLocalArea->m_vConnections)
+	{
+		auto pNextArea = tConnection.m_pArea;
+		if (!pNextArea || !F::NavEngine.GetNavMap()->IsAreaValid(pNextArea) || (pNextArea->m_iTFAttributeFlags & nSpawnRoomFlags))
+			continue;
+
+		float flScore = pNextArea->m_vCenter.DistToSqr(vLocalOrigin);
+		if (pNextArea == pSpawnTargetArea)
+			flScore *= 0.5f;
+		AddCandidate(pNextArea, flScore);
+	}
+
 	for (auto pArea : *F::NavEngine.GetRespawnRoomExitAreas())
 	{
-		float flDist = pArea->m_vCenter.DistTo(vLocalOrigin);
-		if (flBestDist > flDist)
-		{
-			pClosest = pArea;
-			flBestDist = flDist;
-		}
+		if (!pArea || !F::NavEngine.GetNavMap()->IsAreaValid(pArea) || (pArea->m_iTFAttributeFlags & nSpawnRoomFlags))
+			continue;
+
+		float flScore = F::NavEngine.GetPathCost(vLocalOrigin, pArea->m_vCenter);
+		if (flScore == FLT_MAX)
+			continue;
+
+		if (pArea == pSpawnTargetArea)
+			flScore *= 0.6f;
+		AddCandidate(pArea, flScore);
 	}
 
-	if (pClosest)
+	std::sort(vCandidates.begin(), vCandidates.end(), [](const auto& tLeft, const auto& tRight) -> bool
+		{
+			return tLeft.second < tRight.second;
+		});
+
+	for (const auto& [pArea, _] : vCandidates)
 	{
-		// Try to get there
-		if (F::NavEngine.NavTo(pClosest->m_vCenter, PriorityListEnum::EscapeSpawn))
+		if (TryExitArea(pArea))
 			return true;
 	}
+
+	pSpawnTargetArea = nullptr;
 	return false;
 }

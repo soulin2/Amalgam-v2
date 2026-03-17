@@ -1570,7 +1570,6 @@ void CMenu::MenuMisc(int iTab)
 					FToggle(Vars::Misc::Movement::NavBot::SmartJump, FToggleEnum::Right);
 					PushTransparent(!Vars::Misc::Movement::NavEngine::Enabled.Value);
 					{
-						FDropdown(Vars::Misc::Movement::NavEngine::LookAtPath);
 						FDropdown(Vars::Misc::Movement::NavEngine::Draw, FDropdownEnum::Multi, -60);
 						FColorPicker(Vars::Colors::NavbotPath, FColorPickerEnum::SameLine, {}, { H::Draw.Scale(10), H::Draw.Scale(40) });
 						FColorPicker(Vars::Colors::NavbotPossiblePath, FColorPickerEnum::SameLine, {}, { H::Draw.Scale(10), H::Draw.Scale(40) });
@@ -1660,6 +1659,11 @@ void CMenu::MenuMisc(int iTab)
 				} EndSection();
 				if (Section("Bot Utils"))
 				{
+					PushTransparent(!Vars::Misc::Movement::NavEngine::Enabled.Value);
+					{
+						FDropdown(Vars::Misc::Movement::NavEngine::LookAtPath);
+					}
+					PopTransparent();
 					PushTransparent(!Vars::Misc::Movement::NavEngine::LookAtPath.Value && !Vars::Misc::Movement::FollowBot::LookAtPath.Value);
 					{
 						FSlider(Vars::Misc::Movement::BotUtils::LookAtPathSpeed, FSliderEnum::None);
