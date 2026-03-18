@@ -616,7 +616,12 @@ void CAutoDetonate::Run(CTFPlayer* pLocal, CUserCmd* pCmd)
 		}
 	}
 
-	if ((Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Stickies && StickyCheck(pLocal, pCmd))
-		|| (Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Flares && FlareCheck(pLocal)))
+	if (Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Stickies && StickyCheck(pLocal, pCmd))
 		pCmd->buttons |= IN_ATTACK2;
+	else if (Vars::Aimbot::Projectile::AutoDetonate.Value & Vars::Aimbot::Projectile::AutoDetonateEnum::Flares && FlareCheck(pLocal))
+	{
+		auto pWeapon = H::Entities.GetWeapon();
+		if (pWeapon && pWeapon->GetWeaponID() == TF_WEAPON_FLAREGUN)
+			pCmd->buttons |= IN_ATTACK2;
+	}
 }
