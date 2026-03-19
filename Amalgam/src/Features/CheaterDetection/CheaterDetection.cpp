@@ -410,7 +410,7 @@ void CCheaterDetection::ReportDamage(IGameEvent* pEvent)
 	{
 		auto& vAngles = mData[pEntity].m_AimFlicking.m_vAngles;
 		if (!vAngles.empty())
-			vAngles.back().m_bAttacking = true;
+			vAngles.front().m_bAttacking = true;
 	}
 
 	if (bCritTracking)
