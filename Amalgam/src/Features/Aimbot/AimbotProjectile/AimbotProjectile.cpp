@@ -1401,7 +1401,9 @@ bool CAimbotProjectile::HandlePoint(const Vec3& vOrigin, int iSimTime, float flP
 		case Vars::Aimbot::General::AimTypeEnum::Assistive:
 		{
 			Vec3 vPlainAngles = { flPitch, flYaw, 0.f };
-			if (TestAngle(vPoint, vPlainAngles, iSimTime, bSplash, true))
+			Vec3 vTargetCurrentEye = m_tInfo.m_pTarget->m_pEntity->m_vecOrigin() + m_tInfo.m_vTargetEye;
+			if (SDK::VisPosWorld(m_tInfo.m_pLocal, m_tInfo.m_pTarget->m_pEntity, m_tInfo.m_vLocalEye, vTargetCurrentEye)
+				&& TestAngle(vPoint, vPlainAngles, iSimTime, bSplash, true))
 				bReturn = m_iResult = 2;
 		}
 		}

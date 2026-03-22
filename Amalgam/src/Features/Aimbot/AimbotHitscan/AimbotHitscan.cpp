@@ -460,7 +460,7 @@ int CAimbotHitscan::CanHit(Target_t& tTarget, CTFPlayer* pLocal, CTFWeaponBase* 
 					Vec3 vForward; Math::AngleVectors(vAngles, &vForward);
 					float flDist = m_vEyePos.DistTo(vOrigin);
 
-					if (bChanged || SDK::VisPos(pLocal, tTarget.m_pEntity, m_vEyePos, vOrigin))
+					if (SDK::VisPos(pLocal, tTarget.m_pEntity, m_vEyePos, vOrigin))
 					{
 						// for the time being, no vischecks against other hitboxes
 						if ((!bChanged || Math::RayToOBB(m_vEyePos, vForward, vCheckMins, vCheckMaxs, aBones[tHitboxInfo.m_iBone], flModelScale) && SDK::VisPos(pLocal, tTarget.m_pEntity, m_vEyePos, m_vEyePos + vForward * flDist))
@@ -475,7 +475,7 @@ int CAimbotHitscan::CanHit(Target_t& tTarget, CTFPlayer* pLocal, CTFWeaponBase* 
 							tTarget.m_bBacktrack = true;
 							return true;
 						}
-						else if (bChanged && SDK::VisPos(pLocal, tTarget.m_pEntity, m_vEyePos, vOrigin))
+						else if (bChanged) // VisPos already passed in outer condition
 						{
 							if (iReturn != 2 || vAngles.DeltaAngle(G::CurrentUserCmd->viewangles).Length2D() < tTarget.m_vAngleTo.DeltaAngle(G::CurrentUserCmd->viewangles).Length2D())
 								tTarget.m_vAngleTo = vAngles;
@@ -537,7 +537,7 @@ int CAimbotHitscan::CanHit(Target_t& tTarget, CTFPlayer* pLocal, CTFWeaponBase* 
 				Vec3 vForward; Math::AngleVectors(vAngles, &vForward);
 				float flDist = m_vEyePos.DistTo(vOrigin);
 
-				if (bChanged || SDK::VisPos(pLocal, tTarget.m_pEntity, m_vEyePos, vOrigin))
+				if (SDK::VisPos(pLocal, tTarget.m_pEntity, m_vEyePos, vOrigin))
 				{
 					if (!bChanged || Math::RayToOBB(m_vEyePos, vForward, vCheckMins, vCheckMaxs, mTransform) && SDK::VisPos(pLocal, tTarget.m_pEntity, m_vEyePos, m_vEyePos + vForward * flDist))
 					{
@@ -546,7 +546,7 @@ int CAimbotHitscan::CanHit(Target_t& tTarget, CTFPlayer* pLocal, CTFWeaponBase* 
 						tTarget.m_vPos = vOrigin;
 						return true;
 					}
-					else if (bChanged && SDK::VisPos(pLocal, tTarget.m_pEntity, m_vEyePos, vOrigin))
+					else if (bChanged) // VisPos already passed in outer condition
 					{
 						if (iReturn != 2 || vAngles.DeltaAngle(G::CurrentUserCmd->viewangles).Length2D() < tTarget.m_vAngleTo.DeltaAngle(G::CurrentUserCmd->viewangles).Length2D())
 							tTarget.m_vAngleTo = vAngles;
