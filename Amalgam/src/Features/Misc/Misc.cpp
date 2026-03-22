@@ -64,6 +64,7 @@ void CMisc::RunPost(CTFPlayer* pLocal, CUserCmd* pCmd)
 		FastMovement(pLocal, pCmd);
 		BreakShootSound(pLocal, pCmd);
 		MovementLock(pLocal, pCmd);
+		EngiMeleeBug(pLocal, pCmd);
 	}
 }
 
@@ -367,6 +368,24 @@ void CMisc::BreakShootSound(CTFPlayer* pLocal, CUserCmd* pCmd)
 	}
 
 	bLastWasInAttack = G::Attacking == 1 && G::CanPrimaryAttack;
+}
+
+void CMisc::EngiMeleeBug(CTFPlayer* pLocal, CUserCmd* pCmd)
+{
+	if (!Vars::Aimbot::AutoEngie::MeleeBug.Value)
+		return;
+
+	if (pLocal->m_iClass() != TF_CLASS_ENGINEER)
+		return;
+
+	auto pWeapon = H::Entities.GetWeapon();
+	if (!pWeapon || pWeapon->GetWeaponID() != TF_WEAPON_WRENCH)
+		return;
+
+	if (!(pCmd->buttons & IN_ATTACK2) || !G::CanPrimaryAttack)
+		return;
+
+	pCmd->buttons |= IN_ATTACK;
 }
 
 void CMisc::AntiAFK(CTFPlayer* pLocal, CUserCmd* pCmd)

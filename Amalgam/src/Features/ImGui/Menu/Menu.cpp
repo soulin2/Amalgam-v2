@@ -549,6 +549,7 @@ void CMenu::MenuAimbot(int iTab)
 					FSlider(Vars::Aimbot::AutoEngie::AutoUpgradeSentryLVL);
 					FSlider(Vars::Aimbot::AutoEngie::AutoUpgradeDispenserLVL);
 					FSlider(Vars::Aimbot::AutoEngie::AutoUpgradeTeleporterLVL);
+					FToggle(Vars::Aimbot::AutoEngie::MeleeBug);
 				} EndSection();
 			}
 			EndTable();

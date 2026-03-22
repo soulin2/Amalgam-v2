@@ -438,6 +438,7 @@ NAMESPACE_BEGIN(Vars)
 			CVar(AutoUpgradeSentryLVL, "Sentry LVL", 3, SLIDER_CLAMP, 1, 3);
 			CVar(AutoUpgradeDispenserLVL, "Dispenser LVL", 3, SLIDER_CLAMP, 1, 3);
 			CVar(AutoUpgradeTeleporterLVL, "Teleporter LVL", 2, SLIDER_CLAMP, 1, 3);
+			CVar(MeleeBug, "Melee Bug", false);
 		NAMESPACE_END(AutoEngie)
 
 		NAMESPACE_BEGIN(Melee)
