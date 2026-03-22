@@ -379,7 +379,7 @@ void CMisc::EngiMeleeBug(CTFPlayer* pLocal, CUserCmd* pCmd)
 		return;
 
 	auto pWeapon = H::Entities.GetWeapon();
-	if (!pWeapon || pWeapon->GetWeaponID() != TF_WEAPON_WRENCH)
+	if (!pWeapon || pWeapon->GetSlot() != SLOT_MELEE)
 		return;
 
 	if (!(pCmd->buttons & IN_ATTACK2) || !G::CanPrimaryAttack)
