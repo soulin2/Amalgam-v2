@@ -459,6 +459,7 @@ void CGlow::Unload()
 
 	if (m_pMatBlurY)
 	{
+		m_pBloomAmount = nullptr;
 		m_pMatBlurY->DecrementReferenceCount();
 		m_pMatBlurY->DeleteIfUnreferenced();
 		m_pMatBlurY = nullptr;

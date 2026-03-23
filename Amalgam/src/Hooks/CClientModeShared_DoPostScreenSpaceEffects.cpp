@@ -65,5 +65,17 @@ MAKE_HOOK(CViewRender_DrawViewModels, S::CViewRender_DrawViewModels(), void,
 		return;
 
 	F::Glow.RenderSecond();
+
+	// Safety cleanup after glow second pass: mirror the cleanup done after
+	// RenderFirst() above so that any state left dirty by SecondEnd
+	// (or a partial failure inside it) does not carry over into VGUI rendering.
+	F::Glow.m_bRendering = false;
+	I::ModelRender->ForcedMaterialOverride(nullptr);
+	if (auto pRenderContext = I::MaterialSystem->GetRenderContext())
+	{
+		pRenderContext->SetStencilEnable(false);
+		pRenderContext->DepthRange(0.f, 1.f);
+		pRenderContext->CullMode(MATERIAL_CULLMODE_CCW);
+	}
 #endif
 }

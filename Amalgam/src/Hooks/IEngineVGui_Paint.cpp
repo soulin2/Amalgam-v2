@@ -30,20 +30,21 @@ MAKE_HOOK(IEngineVGui_Paint, U::Memory.GetVirtual(I::EngineVGui, 14), void,
 	F::AutoQueue.Run();
 
 #ifndef TEXTMODE
-	// Safety: if cheat rendering flags got stuck (e.g. due to an exception in DrawModel),
-	// reset them here before VGUI panels render to prevent a corrupted material override
-	// from affecting VGUI material rendering and causing an ACCESS VIOLATION.
-	if (F::Chams.m_bRendering || F::Glow.m_bRendering)
+	// Safety: reset all cheat render state before VGUI panels render.
+	// This covers both "stuck m_bRendering" flags (e.g. exception in DrawModel)
+	// AND cases where m_bRendering is already false but a material override or
+	// render state was left dirty by a partial glow pass (e.g. SecondEnd crash,
+	// or RenderViewmodel which never sets m_bRendering).
+	// Doing this unconditionally is safe because 3D rendering is complete by the
+	// time IEngineVGui::Paint fires.
+	F::Chams.m_bRendering = false;
+	F::Glow.m_bRendering = false;
+	I::ModelRender->ForcedMaterialOverride(nullptr);
+	if (auto pRenderContext = I::MaterialSystem->GetRenderContext())
 	{
-		F::Chams.m_bRendering = false;
-		F::Glow.m_bRendering = false;
-		I::ModelRender->ForcedMaterialOverride(nullptr);
-		if (auto pRenderContext = I::MaterialSystem->GetRenderContext())
-		{
-			pRenderContext->SetStencilEnable(false);
-			pRenderContext->DepthRange(0.f, 1.f);
-			pRenderContext->CullMode(MATERIAL_CULLMODE_CCW);
-		}
+		pRenderContext->SetStencilEnable(false);
+		pRenderContext->DepthRange(0.f, 1.f);
+		pRenderContext->CullMode(MATERIAL_CULLMODE_CCW);
 	}
 #endif
 
