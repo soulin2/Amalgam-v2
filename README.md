@@ -7,10 +7,6 @@
   
 Read about the original Amalgam documentation and features [here](https://github.com/rei-2/Amalgam/wiki).  
 Note: This repository is based on **TheGameEnhancer2004's fork** of Amalgam and includes additional changes and improvements.
-
-**Thanks @mlemlody for the crashfix.**
-
-*If you find this fork useful, please consider starring it. It really keeps me motivated and makes me feel like I'm not working on this alone!*
 </div>
 
 ## Changes I've Made
