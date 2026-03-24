@@ -15,6 +15,9 @@ private:
 
 	Vec3 m_vEyePos = {};
 
+	float m_flShootDelayEnd = 0.f;
+	int m_iDelayTargetIdx = -1;
+
 public:
 	void Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pCmd);
 };

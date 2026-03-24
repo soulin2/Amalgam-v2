@@ -310,6 +310,9 @@ NAMESPACE_BEGIN(Vars)
 			CVar(NoSpread, "No spread", false);
 			CVar(PrioritizeNavbot, "Prioritize navbot target", false);
 			CVar(PrioritizeFollowbot, "Prioritize followbot target", false);
+			CVar(ShootDelayMin, "Shoot delay min", 0, SLIDER_CLAMP, 0, 300, 10, "%ims");
+			CVar(ShootDelayMax, "Shoot delay max", 0, SLIDER_CLAMP, 0, 300, 10, "%ims");
+			CVar(MissChance, "Miss chance", 0.f, SLIDER_CLAMP | SLIDER_PRECISION, 0.f, 100.f, 5.f, "%g%%");
 
 			CVarEnum(AimHoldsFire, "Aim holds fire", 2, NOSAVE | DEBUGVAR, nullptr,
 				VA_LIST("False", "Minigun only", "Always"),

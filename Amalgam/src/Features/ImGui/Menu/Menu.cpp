@@ -339,6 +339,17 @@ void CMenu::MenuAimbot(int iTab)
 					FToggle(Vars::Aimbot::General::PrioritizeFollowbot, FToggleEnum::Right);
 
 					Divider();
+					FText("Humanization");
+					Divider();
+					PushTransparent(!Vars::Aimbot::General::AutoShoot.Value);
+					{
+						FSlider(Vars::Aimbot::General::ShootDelayMin, FSliderEnum::Left);
+						FSlider(Vars::Aimbot::General::ShootDelayMax, FSliderEnum::Right);
+						FSlider(Vars::Aimbot::General::MissChance, FSliderEnum::Left);
+					}
+					PopTransparent();
+
+					Divider();
 					FText("Crithack");
 					Divider();
 					FToggle(Vars::CritHack::ForceCrits);

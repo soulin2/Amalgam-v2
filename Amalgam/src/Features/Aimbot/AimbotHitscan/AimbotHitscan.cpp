@@ -570,6 +570,25 @@ bool CAimbotHitscan::ShouldFire(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUser
 	if (!Vars::Aimbot::General::AutoShoot.Value)
 		return false;
 
+	// Shoot delay: wait a random amount of time between min and max before firing
+	{
+		const int iDelayMin = Vars::Aimbot::General::ShootDelayMin.Value;
+		const int iDelayMax = Vars::Aimbot::General::ShootDelayMax.Value;
+		if (iDelayMin > 0 || iDelayMax > 0)
+		{
+			const int iTargetIdx = tTarget.m_pEntity->entindex();
+			if (m_iDelayTargetIdx != iTargetIdx)
+			{
+				m_iDelayTargetIdx = iTargetIdx;
+				const int iActualMax = std::max(iDelayMin, iDelayMax);
+				const int iDelay = iActualMax > iDelayMin ? SDK::StdRandomInt(iDelayMin, iActualMax) : iDelayMin;
+				m_flShootDelayEnd = I::GlobalVars->realtime + iDelay * 0.001f;
+			}
+			if (I::GlobalVars->realtime < m_flShootDelayEnd)
+				return false;
+		}
+	}
+
 	if (Vars::Aimbot::Hitscan::Modifiers.Value & Vars::Aimbot::Hitscan::ModifiersEnum::WaitForHeadshot
 		&& tTarget.m_pEntity->IsPlayer())
 	{
@@ -801,7 +820,10 @@ void CAimbotHitscan::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pC
 
 	auto vTargets = F::AimbotGlobal.ManageTargets(GetTargets, pLocal, pWeapon);
 	if (vTargets.empty())
+	{
+		m_iDelayTargetIdx = -1;
 		return;
+	}
 
 	switch (nWeaponID)
 	{
@@ -889,6 +911,20 @@ void CAimbotHitscan::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pC
 				pCmd->tick_count = TIME_TO_TICKS(tTarget.m_pRecord->m_flSimTime + F::Backtrack.GetFakeInterp());
 		}
 		DrawVisuals(pLocal, tTarget, nWeaponID);
+
+		// Miss chance: randomly offset aim angle to simulate human-like missed shots
+		if (G::Attacking == 1 && Vars::Aimbot::General::MissChance.Value > 0.f)
+		{
+			if (SDK::StdRandomFloat(0.f, 100.f) < Vars::Aimbot::General::MissChance.Value)
+			{
+				// Apply a random angular offset (5–15 degrees in a random direction)
+				const float flMissAmount = SDK::StdRandomFloat(5.f, 15.f);
+				const float flAngleRad = DEG2RAD(SDK::StdRandomFloat(0.f, 360.f));
+				tTarget.m_vAngleTo.y += std::cos(flAngleRad) * flMissAmount;
+				tTarget.m_vAngleTo.x += std::sin(flAngleRad) * flMissAmount;
+				Math::ClampAngles(tTarget.m_vAngleTo);
+			}
+		}
 
 		Aim(pCmd, tTarget.m_vAngleTo);
 		if (G::SilentAngles)
