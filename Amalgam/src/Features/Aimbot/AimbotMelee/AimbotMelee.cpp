@@ -295,7 +295,7 @@ bool CAimbotMelee::CanBackstab(CBaseEntity* pTarget, CTFPlayer* pLocal, Vec3 vEy
 
 	Vec3 vEyePos = m_vEyePos;
 	const float flCompDist = PLAYER_ORIGIN_COMPRESSION / 2;
-	const float flSqCompDist = 0.0884f;
+	const float flMinDist2D = 0.0884f;
 
 	if (auto pCmd = G::CurrentUserCmd;
 		m_mRecordMap[pLocal->entindex()].empty() && pCmd->viewangles != vEyeAngles && G::CanPrimaryAttack)
@@ -321,7 +321,7 @@ bool CAimbotMelee::CanBackstab(CBaseEntity* pTarget, CTFPlayer* pLocal, Vec3 vEy
 
 	Vec3 vToTarget = (pTarget->GetAbsOrigin() - vEyePos).To2D();
 	const float flDist = vToTarget.Normalize();
-	if (flDist < flSqCompDist)
+	if (flDist < flMinDist2D)
 		return false;
 
 	const float flExtra = 2.f * flCompDist / flDist; // account for origin compression
@@ -329,11 +329,11 @@ bool CAimbotMelee::CanBackstab(CBaseEntity* pTarget, CTFPlayer* pLocal, Vec3 vEy
 	float flPosVsOwnerViewMinDot = 0.5f + flExtra;
 	float flViewAnglesMinDot = -0.3f + 0.0031f; // 0.00306795676297 ?
 
+	Vec3 vOwnerForward; Math::AngleVectors(vEyeAngles, &vOwnerForward);
+	vOwnerForward.Normalize2D();
+
 	auto TestDots = [&](Vec3 vTargetAngles)
 		{
-			Vec3 vOwnerForward; Math::AngleVectors(vEyeAngles, &vOwnerForward);
-			vOwnerForward.Normalize2D();
-
 			Vec3 vTargetForward; Math::AngleVectors(vTargetAngles, &vTargetForward);
 			vTargetForward.Normalize2D();
 
