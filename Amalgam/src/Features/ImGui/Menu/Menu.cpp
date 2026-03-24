@@ -345,7 +345,6 @@ void CMenu::MenuAimbot(int iTab)
 					{
 						FSlider(Vars::Aimbot::General::ShootDelayMin, FSliderEnum::Left);
 						FSlider(Vars::Aimbot::General::ShootDelayMax, FSliderEnum::Right);
-						FSlider(Vars::Aimbot::General::MissChance, FSliderEnum::Left);
 					}
 					PopTransparent();
 

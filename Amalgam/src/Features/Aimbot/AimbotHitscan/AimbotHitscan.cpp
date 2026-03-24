@@ -912,19 +912,6 @@ void CAimbotHitscan::Run(CTFPlayer* pLocal, CTFWeaponBase* pWeapon, CUserCmd* pC
 		}
 		DrawVisuals(pLocal, tTarget, nWeaponID);
 
-		// Miss chance: randomly offset aim angle to simulate human-like missed shots
-		if (G::Attacking == 1 && Vars::Aimbot::General::MissChance.Value > 0.f)
-		{
-			if (SDK::StdRandomFloat(0.f, 100.f) < Vars::Aimbot::General::MissChance.Value)
-			{
-				// Apply a random angular offset (5–15 degrees in a random direction)
-				const float flMissAmount = SDK::StdRandomFloat(5.f, 15.f);
-				const float flAngleRad = DEG2RAD(SDK::StdRandomFloat(0.f, 360.f));
-				tTarget.m_vAngleTo.y += std::cos(flAngleRad) * flMissAmount;
-				tTarget.m_vAngleTo.x += std::sin(flAngleRad) * flMissAmount;
-				Math::ClampAngles(tTarget.m_vAngleTo);
-			}
-		}
 
 		Aim(pCmd, tTarget.m_vAngleTo);
 		if (G::SilentAngles)
